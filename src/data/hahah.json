@@ -1,0 +1,70 @@
+{
+  "acrobatics": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "sleigh_of_hand": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "stealth": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "arcana": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "history": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "investigation": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "nature": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "religion": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "animal_handling": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "insight": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "medicine": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "perception": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "survival": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "deception": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "intimidation": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "performance": {
+    "proficiency": false,
+    "bonus": 0
+  },
+  "persuasion": {
+    "proficiency": false,
+    "bonus": 0
+  }
+}

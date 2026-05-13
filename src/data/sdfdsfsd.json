@@ -1,0 +1,145 @@
+[
+  {
+    "name": "strength",
+    "score": "",
+    "modifier": "",
+    "saving_throw_proficiency": false,
+    "saving_throw_bonus": "",
+    "skills": [
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Athletics"
+      }
+    ]
+  },
+  {
+    "name": "dexterity",
+    "score": "",
+    "modifier": "",
+    "saving_throw_proficiency": false,
+    "saving_throw_bonus": "",
+    "skills": [
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Acrobatics"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Sleight of Hand"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Stealth"
+      }
+    ]
+  },
+  {
+    "name": "constitution",
+    "score": "",
+    "modifier": "",
+    "saving_throw_proficiency": false,
+    "saving_throw_bonus": "",
+    "skills": []
+  },
+  {
+    "name": "intelligence",
+    "score": "",
+    "modifier": "",
+    "saving_throw_proficiency": false,
+    "saving_throw_bonus": "",
+    "skills": [
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Arcana"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "History"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Investigation"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Nature"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Religion"
+      }
+    ]
+  },
+  {
+    "name": "wisdom",
+    "score": "",
+    "modifier": "",
+    "saving_throw_proficiency": false,
+    "saving_throw_bonus": "",
+    "skills": [
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Animal Handling"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Insight"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Medicine"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Perception"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Survival"
+      }
+    ]
+  },
+  {
+    "name": "charisma",
+    "score": "",
+    "modifier": "",
+    "saving_throw_proficiency": false,
+    "saving_throw_bonus": "",
+    "skills": [
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Deception"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Intimidation"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Performance"
+      },
+      {
+        "proficiency": "",
+        "bonus": "",
+        "name": "Persuasion"
+      }
+    ]
+  }
+]

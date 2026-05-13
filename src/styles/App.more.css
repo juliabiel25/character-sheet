@@ -1,0 +1,205 @@
+#content-wrapper {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  min-height: 100vh;
+  /* max-height: 100vh; */
+  /* overflow:hidden; */
+}
+
+#left-panel, #right-panel{
+  min-width: max-content;
+  flex-shrink: 0;
+  overflow: hidden;
+  overflow-y: auto;
+}
+
+main {
+  flex:1;
+  min-width:0;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+}
+
+header {
+  display: flex;
+  gap: 10px;
+}
+
+.header-left, .header-right {
+  text-align: left;
+  width: 43%;
+}
+
+.header-right {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 10px;
+}
+
+.labeled-input {
+  display: flex;
+  flex-direction: column;
+}
+
+.character-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.character-exp, .character-armor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hit-points-columns {
+  display: grid;
+  gap:5px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.svg-border {
+  position:absolute;
+  z-index: 0;
+  pointer-events: none;
+  color: pink
+}
+
+.svg-border-content {
+  position:relative;
+  z-index:10;
+
+}
+
+/* --------------------------------------------- */
+/* character selection */
+
+#character-selection {
+  padding: 20px 15px;
+  display: flex;
+  max-width: 100vh;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.character-tile {
+  /* display: block; */
+  /* padding: 2em; */
+  width: 80px;
+  height:80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: gray;
+  border: solid 3px gray;
+}
+.character-tile:hover {
+  border-color:  white;
+}
+.character-selected {
+  background-color: blue;
+  border-color: blue;
+}
+.new-character-button {
+  background-color: #66666677;
+  border-color: #66666600;
+}
+.tooltip {
+  padding: 1em;
+  border-radius: 5px;
+  background-color: black;
+}
+
+/* --------------------------------------------- */
+
+#options {
+  position: fixed;
+  z-index:100;
+  bottom: 0;
+  right: 0;
+}
+
+#armor_class {
+  text-align: center;
+}
+
+.card {
+  /* border:1px solid #ffffff76; */
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.22);
+background-blend-mode: multiply;
+  border-radius: 1em;
+}
+
+.skill-group-title {
+  text-align: center;
+}
+
+/* modifier input */
+.modifier-input {
+  width: 120px !important;
+  height: 120px !important;
+  text-align: center !important;
+}
+
+.modifier-input input {
+  font-size: 2em !important;
+}
+
+/* score input */
+.score-input {
+  height: 70px !important;
+  text-align: center !important;
+  
+}
+
+.score-input input {
+  font-size: 1.5em !important;
+}
+
+.skill-label {
+  max-width: max-content; 
+}
+
+.ability-cards-container {
+  padding: 20px;
+  /* max-width: 1000px; */
+  background-color: rgba(81, 16, 90, 0.157);
+  border-radius: 2em;
+  /* overflow-y: auto; */
+}
+
+.ability-card-grid {
+  display: grid;
+  grid-template-rows: repeat(3, auto);
+  grid-auto-flow: column;
+}
+
+.ability-card {
+  min-width: 300px;
+  max-width: 300px;
+}
+
+.ability-header {
+  margin: 0.5em 0
+}
+
+.ability-bonus {
+  width: 6em
+}
+
+.rt-Separator {
+  margin: 10px !important;
+  width: 100% !important;
+}

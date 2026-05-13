@@ -1,0 +1,25 @@
+.sync-widget-container {
+    z-index: 200;
+    margin: 1em
+}
+
+.sync-widget-container .rt-IconButton {
+	transition: background 160ms ease-out !important;
+}
+
+.widget-menu-container {
+    background-color: var(--mauve-1);
+    border: 1px solid var(--mauve-5);
+    min-height: 500px;
+    max-height: 80vh;
+    width: 350px;
+    border-radius: 1em;
+
+    /* box-shadow: var(--shadow-4); */
+    /* transition: all 50ms ease-out; */
+    /* padding:1em; */
+}
+
+.history-entry-timestamp {
+    color: var(--mauve-10)
+}
