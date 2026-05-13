@@ -6,3 +6,5 @@ export type SyncHistoryEntry = {
 };
 
 export type SyncStatus = "idle" | "saved" | "error";
+
+export type InputValue = string | number | boolean | boolean[] | undefined;

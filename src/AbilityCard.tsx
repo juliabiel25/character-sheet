@@ -1,6 +1,7 @@
 import { Flex, Separator } from "@radix-ui/themes";
 import Input from "./Input";
 import { type AbilityDTO, type SkillDTO } from "./data/characters";
+import { type InputValue } from "./types/types";
 
 interface AbilityCardProps {
   ability: AbilityDTO;
@@ -8,50 +9,58 @@ interface AbilityCardProps {
     newAbility: AbilityDTO,
     options?: {
       syncHistoryFieldName?: string;
-      syncHistoryValueGetter?: (abilities: AbilityDTO[]) => unknown;
+      syncHistoryValueGetter?: (newValue: AbilityDTO[]) => unknown;
     }
   ) => void;
 }
 
 const AbilityCard = ({ ability, onChange }: AbilityCardProps) => {
   const handleAbilityChange = (
-    propertyName: string,
-    newValue: string | boolean | SkillDTO[],
+    propertyName: keyof AbilityDTO,
+    newValue: InputValue | SkillDTO[],
     options?: {
       syncHistoryFieldName?: string;
-      syncHistoryValueGetter?: (abilities: AbilityDTO[]) => unknown;
+      syncHistoryValueGetter?: (newValue: AbilityDTO[]) => unknown;
     }
   ) => {
-    const newAbility = { ...ability, [propertyName]: newValue };
+    const newAbility: AbilityDTO = {
+      ...ability,
+      [propertyName]: newValue,
+    };
+
     const syncHistoryValueGetter =
       options?.syncHistoryValueGetter ??
       ((changedAbilities: AbilityDTO[]) =>
-        changedAbilities.find((a) => a.name === ability.name)[propertyName]);
+        changedAbilities.find((a: AbilityDTO) => a?.name === ability?.name)?.[
+          propertyName
+        ]);
 
     onChange(newAbility, {
       syncHistoryFieldName:
-        options?.syncHistoryFieldName ?? `${ability.name} ${propertyName}`,
+        options?.syncHistoryFieldName ??
+        `${ability?.name} ${String(propertyName)}`,
       syncHistoryValueGetter,
     });
   };
 
   const handleSkillChange = (
     skillName: string,
-    propertyName: string,
-    propertyValue
+    propertyName: keyof SkillDTO,
+    propertyValue: InputValue
   ) => {
     const newSkills = ability.skills.map((skill) =>
       skill.name === skillName
         ? { ...skill, [propertyName]: propertyValue }
         : skill
     );
+
     const syncHistoryValueGetter = (changedAbilities: AbilityDTO[]) =>
       changedAbilities
-        .find((a) => a.name === ability.name)
-        .skills.find((s) => s.name === skillName)[propertyName];
+        .find((a) => a?.name === ability?.name)
+        ?.skills.find((s) => s?.name === skillName)?.[propertyName];
 
     handleAbilityChange("skills", newSkills, {
-      syncHistoryFieldName: `${skillName} ${propertyName}`,
+      syncHistoryFieldName: `${skillName} ${String(propertyName)}`,
       syncHistoryValueGetter,
     });
   };
@@ -76,7 +85,7 @@ const AbilityCard = ({ ability, onChange }: AbilityCardProps) => {
               type="text"
               className="modifier-input"
               value={ability.modifier}
-              onChange={(newValue: string) => {
+              onChange={(newValue: InputValue) => {
                 handleAbilityChange(`modifier`, newValue);
               }}
             />
@@ -87,7 +96,7 @@ const AbilityCard = ({ ability, onChange }: AbilityCardProps) => {
               type="text"
               className="score-input"
               value={ability.score}
-              onChange={(newValue: string) => {
+              onChange={(newValue: InputValue) => {
                 handleAbilityChange(`score`, newValue);
               }}
             />
@@ -108,7 +117,7 @@ const AbilityCard = ({ ability, onChange }: AbilityCardProps) => {
               <Input
                 type="toggle"
                 value={ability.saving_throw_proficiency}
-                onChange={(newValue: string) => {
+                onChange={(newValue: InputValue) => {
                   handleAbilityChange(`saving_throw_proficiency`, newValue);
                 }}
               />
@@ -116,7 +125,7 @@ const AbilityCard = ({ ability, onChange }: AbilityCardProps) => {
                 type="text"
                 className="ability-bonus"
                 value={ability.saving_throw_bonus}
-                onChange={(newValue: string) => {
+                onChange={(newValue: InputValue) => {
                   handleAbilityChange(`saving_throw_bonus`, newValue);
                 }}
               />

@@ -1,8 +1,9 @@
+import type { InputValue } from "../types/types";
 import { getUserFromSession } from "../utils/auth";
 import { supabase } from "../utils/supabase";
 
 export type CharacterDTO = {
-  id?: string;
+  id: string;
   user_id?: string;
   name?: string;
   species?: string;
@@ -27,8 +28,8 @@ export type CharacterDTO = {
   death_saves_successes?: [boolean, boolean, boolean];
   death_saves_failures?: [boolean, boolean, boolean];
   proficiency_bonus?: string;
-  equipment?: unknown;
-  coins?: unknown;
+  // equipment?;
+  // coins?;
   created_at?: string;
   updated_at?: string;
   initiative_bonus?: string;
@@ -56,7 +57,7 @@ export async function insertCharacter(character?: CharacterDTO) {
   const user = await getUserFromSession();
   const { error, data } = await supabase
     .from("characters")
-    .insert([{ user_id: user.id, ...character }])
+    .insert([{ user_id: user?.id, ...character }])
     .select()
     .single();
   return { error, data };
@@ -73,7 +74,7 @@ export async function getCharacter(id: string) {
 export async function updateCharacter(
   id: string,
   columnName: string,
-  newValue: unknown
+  newValue: InputValue | AbilityDTO[]
 ) {
   return supabase
     .from("characters")

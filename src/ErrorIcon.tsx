@@ -1,6 +1,5 @@
-import { ExclamationTriangleIcon, ReloadIcon } from "@radix-ui/react-icons";
-import { Flex, IconButton } from "@radix-ui/themes";
-import { useState } from "react";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { Flex } from "@radix-ui/themes";
 import * as Tooltip from "@radix-ui/react-tooltip";
 
 interface ErrorIconProps {
@@ -8,25 +7,13 @@ interface ErrorIconProps {
   errorMessage?: string;
 }
 
-const ErrorIcon = ({ onClick, errorMessage }: ErrorIconProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-
+const ErrorIcon = ({ errorMessage }: ErrorIconProps) => {
   return (
     <Tooltip.Provider delayDuration={0}>
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
-          <Flex
-            className="icon-container"
-            onMouseLeave={() => setIsHovered(false)}
-            onMouseEnter={() => setIsHovered(true)}
-          >
-            {/* {isHovered ? (
-              <IconButton onClick={onClick}>
-                <ReloadIcon />
-              </IconButton>
-            ) : ( */}
+          <Flex className="icon-container">
             <ExclamationTriangleIcon color="tomato" />
-            {/* )} */}
           </Flex>
         </Tooltip.Trigger>
         {errorMessage && (

@@ -26,7 +26,7 @@ const WidgetMenu = ({
   //   tooltip,
   onReloadClick,
 }: WidgetMenuProps) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
   const toggleMenuOpened = () => {
     setIsMenuOpen((prev) => !prev);

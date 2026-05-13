@@ -7,9 +7,9 @@ interface AbilitySectionProps {
   abilities: AbilityDTO[];
   onChange: (
     newAbilities: AbilityDTO[],
-    options: {
+    options?: {
       syncHistoryFieldName?: string;
-      syncHistoryValueGetter?: (abilities: AbilityDTO[]) => unknown;
+      syncHistoryValueGetter?: (newValue: AbilityDTO[]) => unknown;
     }
   ) => void;
 }
@@ -19,12 +19,12 @@ const AbilitySection = ({ abilities, onChange }: AbilitySectionProps) => {
     newAbility: AbilityDTO,
     options?: {
       syncHistoryFieldName?: string;
-      syncHistoryValueGetter?: (abilities: AbilityDTO[]) => unknown;
+      syncHistoryValueGetter?: (newValue: AbilityDTO[]) => unknown;
     }
   ) => {
     onChange(
       abilities.map((ability) =>
-        ability.name === newAbility.name ? newAbility : ability
+        ability?.name === newAbility?.name ? newAbility : ability
       ),
       options
     );
@@ -36,7 +36,7 @@ const AbilitySection = ({ abilities, onChange }: AbilitySectionProps) => {
         {abilities.map((ability) => (
           <AbilityCard
             ability={ability}
-            key={`${ability.name}_abilityCard`}
+            key={`${ability?.name}_abilityCard`}
             onChange={handleAbilityChange}
           />
         ))}

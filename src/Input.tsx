@@ -1,16 +1,12 @@
 import { Box, Flex, TextField } from "@radix-ui/themes";
-// import { Spinner } from "@radix-ui/themes";
-// import { CheckIcon } from "@radix-ui/react-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
-// import { updateCharacter } from "./data/characters";
-// import ErrorIcon from "./ErrorIcon";
 import { CheckboxGroupInput } from "./CheckboxGroupInput";
+import type { InputValue } from "./types/types";
 
-// interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 interface InputProps {
   type?: "text" | "toggle" | "checkbox-group";
-  onChange?: (newValue) => void;
-  value: string | number | boolean | boolean[];
+  onChange?: (newValue: InputValue) => void;
+  value: InputValue;
   id?: string;
   className?: string;
 }
@@ -23,16 +19,16 @@ const Input = ({
   onChange,
 }: InputProps) => {
   const normalize = useCallback(
-    (v) =>
+    (v: InputValue) =>
       v === null || v === undefined ? (type === "toggle" ? false : "") : v,
     [type]
   );
 
-  const [draftValue, setDraftValue] = useState(normalize(value));
-  const idleTimeout = useRef(null);
-  const lastUpdatedValue = useRef(null);
+  const [draftValue, setDraftValue] = useState<InputValue>(normalize(value));
+  const idleTimeout = useRef<number | null>(null);
+  const lastUpdatedValue = useRef<InputValue | null>(null);
 
-  const handleChange = (newVal: unknown) => {
+  const handleChange = (newVal: InputValue) => {
     setDraftValue(newVal);
   };
 
@@ -80,13 +76,16 @@ const Input = ({
           />
         </Flex>
       ) : type === "checkbox-group" ? (
-        <CheckboxGroupInput value={draftValue} onChange={handleChange} />
+        <CheckboxGroupInput
+          value={draftValue as boolean[]}
+          onChange={handleChange}
+        />
       ) : (
         <TextField.Root
           size="2"
           id={id}
           className={className}
-          value={draftValue.toString()}
+          value={draftValue?.toString()}
           onChange={(e) => handleChange(e.target.value)}
         ></TextField.Root>
       )}

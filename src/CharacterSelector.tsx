@@ -3,7 +3,7 @@ import { type CharacterDTO } from "./data/characters";
 
 interface CharacterSelectorProps {
   characterList: CharacterDTO[];
-  selectedCharacterId: string;
+  selectedCharacterId: string | null;
   onCharacterSelect: (id: string) => void;
   onNewCharacterClick: () => void;
 }
@@ -17,13 +17,13 @@ const CharacterSelector = ({
     <Tooltip.Provider delayDuration={0}>
       <div id="character-selection">
         {characterList.map((character) => (
-          <Tooltip.Root key={`character-selection-tile-${character.id}`}>
+          <Tooltip.Root key={`character-selection-tile-${character?.id}`}>
             <Tooltip.Trigger asChild>
               <div
                 className={`character-tile ${
-                  selectedCharacterId === character.id && "character-selected"
+                  selectedCharacterId === character?.id && "character-selected"
                 }`}
-                onClick={() => onCharacterSelect(character.id)}
+                onClick={() => onCharacterSelect(character?.id)}
               >
                 L
               </div>
@@ -32,8 +32,8 @@ const CharacterSelector = ({
               <Tooltip.Arrow />
               <div className="tooltip">
                 {character.name
-                  ? `${character.name} [${character.id}]`
-                  : character.id}
+                  ? `${character.name} [${character?.id}]`
+                  : character?.id}
               </div>
             </Tooltip.Content>
           </Tooltip.Root>

@@ -16,17 +16,23 @@ import {
 } from "./data/characters";
 import { Flex } from "@radix-ui/themes";
 import WidgetMenu from "./WidgetMenu";
-import { type SyncStatus, type SyncHistoryEntry } from "./types/types";
+import {
+  type SyncStatus,
+  type SyncHistoryEntry,
+  type InputValue,
+} from "./types/types";
 import AbilitySection from "./AbilitySection";
 
 function App() {
   const [characterList, setCharacterList] = useState<CharacterDTO[]>([]);
-  const [selectedCharacterId, setSelectedCharacterId] = useState<string>(null);
-  const [character, setCharacter] = useState<CharacterDTO>();
-  const [userId, setUserId] = useState<string>();
+  const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(
+    null
+  );
+  const [character, setCharacter] = useState<CharacterDTO | null>(null);
+  const [userId, setUserId] = useState<string | null | undefined>(null);
   const [syncHistory, setSyncHistory] = useState<SyncHistoryEntry[]>([]);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
-  const statusTimeout = useRef(null);
+  const statusTimeout = useRef<number>(null);
 
   async function getCharacterList() {
     const { data, error } = await getCharacters();
@@ -59,45 +65,45 @@ function App() {
 
   const handleUpdateField = async (
     columnName: string,
-    newValue: unknown,
+    newValue: InputValue | AbilityDTO[],
     {
       syncHistoryFieldName,
       syncHistoryValueGetter,
     }: {
       syncHistoryFieldName?: string;
-      syncHistoryValueGetter?: (newValue: unknown) => unknown;
+      syncHistoryValueGetter?: (newValue: InputValue | AbilityDTO[]) => unknown;
     } = {}
   ) => {
     console.log(`Updating character [${selectedCharacterId}]:`, {
       [columnName]: newValue,
     });
+    if (selectedCharacterId) {
+      const { error } = await updateCharacter(
+        selectedCharacterId,
+        columnName,
+        newValue
+      );
 
-    const { error } = await updateCharacter(
-      selectedCharacterId,
-      columnName,
-      newValue
-    );
+      const value = syncHistoryValueGetter
+        ? syncHistoryValueGetter(newValue)
+        : newValue;
 
-    const value = syncHistoryValueGetter
-      ? syncHistoryValueGetter(newValue)
-      : newValue;
+      setSyncHistory((prev) => [
+        ...prev,
+        {
+          timestamp: new Date(),
+          field: syncHistoryFieldName ?? columnName,
+          value: value ?? "",
+          error: error?.message,
+        },
+      ]);
 
-    setSyncHistory((prev) => [
-      ...prev,
-      {
-        timestamp: new Date(),
-        field: syncHistoryFieldName ?? columnName,
-        value: value ?? "",
-        error: error ? error.message : null,
-      },
-    ]);
-
-    if (error) {
-      setSyncStatus("error");
-    } else {
-      setSyncStatus("saved");
+      if (error) {
+        setSyncStatus("error");
+      } else {
+        setSyncStatus("saved");
+      }
     }
-
     // clear the 'saved' OR 'ERROR' status after 5s while
     statusTimeout.current = setTimeout(() => {
       clearSyncStatus();
@@ -125,14 +131,16 @@ function App() {
       // if the deleted character is the currently selected one => clear selection
       const characters = await getCharacterList();
       if (id === selectedCharacterId) {
-        setSelectedCharacterId(characters[0].id);
+        setSelectedCharacterId(
+          characters && characters.length > 0 ? characters[0].id : null
+        );
       }
     }
   };
 
   useEffect(() => {
     // 1. handle existing session
-    getUserFromSession().then((sessionUser) => setUserId(sessionUser.id));
+    getUserFromSession().then((sessionUser) => setUserId(sessionUser?.id));
     // 2. listen for future auth changes
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
@@ -213,7 +221,7 @@ function App() {
           <Flex direction={"column"} gap={"20px"}>
             <Button
               color="red"
-              onClick={() => handleDeleteCharacter(selectedCharacterId)}
+              onClick={() => handleDeleteCharacter(character.id)}
             >
               delete character
             </Button>
@@ -474,7 +482,7 @@ function App() {
                   <Input
                     type="text"
                     id="passive_perception"
-                    value={character.passive_perception}
+                    value={character?.passive_perception}
                     onChange={(newValue) =>
                       handleUpdateField("passive_perception", newValue)
                     }
@@ -482,18 +490,23 @@ function App() {
                 </div>
               </div>
             </Flex>
-            <AbilitySection
-              abilities={character.abilities}
-              onChange={(
-                newAbilities: AbilityDTO[],
-                options: {
-                  syncHistoryFieldName?: string;
-                  syncHistoryValueGetter?: (
-                    newAbilities: AbilityDTO[]
-                  ) => unknown;
+            {character?.abilities && (
+              <AbilitySection
+                abilities={character.abilities}
+                onChange={(newAbilities, options) =>
+                  handleUpdateField(
+                    "abilities",
+                    newAbilities as InputValue | AbilityDTO[],
+                    options as {
+                      syncHistoryFieldName?: string;
+                      syncHistoryValueGetter?: (
+                        newValue: AbilityDTO[] | InputValue
+                      ) => unknown;
+                    }
+                  )
                 }
-              ) => handleUpdateField("abilities", newAbilities, options)}
-            />
+              />
+            )}
           </Flex>
         ) : (
           "no character was returned"
