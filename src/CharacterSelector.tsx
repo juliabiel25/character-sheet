@@ -1,5 +1,5 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { type CharacterDTO } from "./data/characters";
+import { type CharacterDTO } from "./types/types";
 
 interface CharacterSelectorProps {
   characterList: CharacterDTO[];

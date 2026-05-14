@@ -6,29 +6,26 @@ import UnauthorizedView from "./UnauthorizedView";
 import CharacterSelector from "./CharacterSelector";
 import { Button } from "@radix-ui/themes";
 import Input from "./Input";
-import {
-  getCharacters,
-  insertCharacter,
-  deleteCharacter,
-  type CharacterDTO,
-  updateCharacter,
-  type AbilityDTO,
-} from "./data/characters";
+import { getCharacters, deleteCharacter } from "./data/characters";
 import { Flex } from "@radix-ui/themes";
 import WidgetMenu from "./WidgetMenu";
-import {
-  type SyncStatus,
-  type SyncHistoryEntry,
-  type InputValue,
+import type {
+  SyncStatus,
+  SyncHistoryEntry,
+  CharacterDTO,
+  UpdateTableFunction,
 } from "./types/types";
 import AbilitySection from "./AbilitySection";
+import { useCharacterDetails } from "./hooks/useCharacterDetails";
+import { insertCharacter } from "./data/characters";
 
 function App() {
   const [characterList, setCharacterList] = useState<CharacterDTO[]>([]);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(
     null
   );
-  const [character, setCharacter] = useState<CharacterDTO | null>(null);
+  const { character, getCharacterDetails, resetCharacter } =
+    useCharacterDetails();
   const [userId, setUserId] = useState<string | null | undefined>(null);
   const [syncHistory, setSyncHistory] = useState<SyncHistoryEntry[]>([]);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
@@ -42,58 +39,33 @@ function App() {
     return data;
   }
 
-  // get the selected character information
-  async function getCharacterDetails() {
-    if (selectedCharacterId) {
-      const { error, data } = await supabase
-        .from("characters")
-        .select()
-        .eq("id", selectedCharacterId)
-        .single<CharacterDTO>();
-      if (!error) {
-        console.log("fetched selected character data: ", data);
-        setCharacter(data);
-      }
-    } else {
-      setCharacter(null);
-    }
-  }
-
   const clearSyncStatus = () => {
     setSyncStatus("idle");
   };
 
-  const handleUpdateField = async (
-    columnName: string,
-    newValue: InputValue | AbilityDTO[],
-    {
-      syncHistoryFieldName,
-      syncHistoryValueGetter,
-    }: {
-      syncHistoryFieldName?: string;
-      syncHistoryValueGetter?: (newValue: InputValue | AbilityDTO[]) => unknown;
-    } = {}
+  const handleUpdateField: UpdateTableFunction = async (
+    columnName,
+    newValue,
+    id = selectedCharacterId,
+    tableName = "characters"
   ) => {
-    console.log(`Updating character [${selectedCharacterId}]:`, {
-      [columnName]: newValue,
-    });
     if (selectedCharacterId) {
-      const { error } = await updateCharacter(
-        selectedCharacterId,
-        columnName,
-        newValue
-      );
+      const { error, data } = await supabase
+        .from(tableName)
+        .update({ [columnName]: newValue })
+        .eq("id", id)
+        .select()
+        .single();
 
-      const value = syncHistoryValueGetter
-        ? syncHistoryValueGetter(newValue)
-        : newValue;
+      if (error) console.log("Error on update: ", error?.message);
+      console.log("Updated row:", data);
 
       setSyncHistory((prev) => [
         ...prev,
         {
           timestamp: new Date(),
-          field: syncHistoryFieldName ?? columnName,
-          value: value ?? "",
+          field: columnName,
+          value: newValue ?? "",
           error: error?.message,
         },
       ]);
@@ -148,7 +120,7 @@ function App() {
           setUserId(session.user.id);
         } else {
           setUserId(null);
-          setCharacter(null);
+          resetCharacter();
         }
       }
     );
@@ -164,11 +136,9 @@ function App() {
         .from("characters")
         .select()
         .order("created_at");
-      // .order("updated_at");
       if (!error && !!data) {
         setCharacterList(data);
         setSelectedCharacterId(data[0].id);
-        setCharacter(data[0]);
       }
     }
     if (userId) {
@@ -178,30 +148,19 @@ function App() {
 
   useEffect(() => {
     console.log("selected character:", selectedCharacterId);
-
-    // get the selected character information
-    const getCharacterDetails = async () => {
-      if (selectedCharacterId) {
-        const { error, data } = await supabase
-          .from("characters")
-          .select()
-          .eq("id", selectedCharacterId)
-          .single<CharacterDTO>();
-        if (!error) {
-          console.log("fetched selected character data: ", data);
-          setCharacter(data);
-        }
-      } else {
-        setCharacter(null);
-      }
+    const load = async () => {
+      console.log("loda...");
+      await getCharacterDetails(selectedCharacterId);
     };
-    getCharacterDetails();
+
+    load();
   }, [selectedCharacterId]);
+  // }, [selectedCharacterId, getCharacterDetails]);
 
   return (
     <div id="content-wrapper">
       <div id="left-panel">
-        {userId && (
+        {userId && character && (
           <CharacterSelector
             characterList={characterList}
             selectedCharacterId={selectedCharacterId}
@@ -213,8 +172,11 @@ function App() {
         )}
       </div>
       <main>
-        <Button onClick={signInWithGoogle}>log in with google</Button>
-        <Button onClick={signOut}>log out</Button>
+        {userId ? (
+          <Button onClick={signOut}>log out</Button>
+        ) : (
+          <Button onClick={signInWithGoogle}>log in with google</Button>
+        )}
         {!userId ? (
           <UnauthorizedView />
         ) : character ? (
@@ -493,29 +455,27 @@ function App() {
             {character?.abilities && (
               <AbilitySection
                 abilities={character.abilities}
-                onChange={(newAbilities, options) =>
-                  handleUpdateField(
-                    "abilities",
-                    newAbilities as InputValue | AbilityDTO[],
-                    options as {
-                      syncHistoryFieldName?: string;
-                      syncHistoryValueGetter?: (
-                        newValue: AbilityDTO[] | InputValue
-                      ) => unknown;
-                    }
-                  )
-                }
+                onChange={handleUpdateField}
               />
             )}
           </Flex>
         ) : (
-          "no character was returned"
+          <Flex
+            width={"100%"}
+            height={"100%"}
+            align={"center"}
+            justify={"center"}
+          >
+            <Button size={"4"} onClick={() => createCharacter()}>
+              Create a new character
+            </Button>
+          </Flex>
         )}
       </main>
       <WidgetMenu
         syncHistory={syncHistory}
         syncStatus={syncStatus}
-        onReloadClick={getCharacterDetails}
+        onReloadClick={() => getCharacterDetails(selectedCharacterId)}
       />
     </div>
   );

@@ -1,57 +1,7 @@
 import type { InputValue } from "../types/types";
 import { getUserFromSession } from "../utils/auth";
 import { supabase } from "../utils/supabase";
-
-export type CharacterDTO = {
-  id: string;
-  user_id?: string;
-  name?: string;
-  species?: string;
-  class?: string;
-  subclass?: string;
-  level?: string;
-  background?: string;
-  experience_points?: string;
-  heroic_inspiration?: boolean;
-  spellcasting_ability?: string;
-  spellcasting_modifier?: string;
-  spell_save_dc?: string;
-  spell_attack_bonus?: string;
-  armor_class?: string;
-  shield?: boolean;
-  hit_points_current?: string;
-  hit_points_temp?: string;
-  hit_points_max?: string;
-  speed?: string;
-  hit_dice_spent?: string;
-  hit_dice_max?: string;
-  death_saves_successes?: [boolean, boolean, boolean];
-  death_saves_failures?: [boolean, boolean, boolean];
-  proficiency_bonus?: string;
-  // equipment?;
-  // coins?;
-  created_at?: string;
-  updated_at?: string;
-  initiative_bonus?: string;
-  size?: string;
-  passive_perception?: string;
-  abilities?: AbilityDTO[];
-};
-
-export type AbilityDTO = {
-  name: string;
-  score: string;
-  modifier: string;
-  saving_throw_proficiency: boolean;
-  saving_throw_bonus: string;
-  skills: SkillDTO[];
-};
-
-export type SkillDTO = {
-  proficiency: boolean;
-  bonus: string;
-  name: string;
-};
+import { type CharacterDTO } from "../types/types";
 
 export async function insertCharacter(character?: CharacterDTO) {
   const user = await getUserFromSession();
@@ -74,10 +24,36 @@ export async function getCharacter(id: string) {
 export async function updateCharacter(
   id: string,
   columnName: string,
-  newValue: InputValue | AbilityDTO[]
+  newValue: InputValue
 ) {
   return supabase
     .from("characters")
+    .update({ [columnName]: newValue })
+    .eq("id", id)
+    .select()
+    .single();
+}
+
+export async function updateAbility(
+  id: string,
+  columnName: string,
+  newValue: InputValue
+) {
+  return supabase
+    .from("abilities")
+    .update({ [columnName]: newValue })
+    .eq("id", id)
+    .select()
+    .single();
+}
+
+export async function updateSkill(
+  id: string,
+  columnName: string,
+  newValue: InputValue
+) {
+  return supabase
+    .from("skills")
     .update({ [columnName]: newValue })
     .eq("id", id)
     .select()

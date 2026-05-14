@@ -1,69 +1,74 @@
 import { Flex, Separator } from "@radix-ui/themes";
 import Input from "./Input";
-import { type AbilityDTO, type SkillDTO } from "./data/characters";
-import { type InputValue } from "./types/types";
+import {
+  type InputValue,
+  type UpdateTableFunction,
+  type AbilityDTO,
+  // type SkillDTO,
+} from "./types/types";
 
 interface AbilityCardProps {
   ability: AbilityDTO;
-  onChange: (
-    newAbility: AbilityDTO,
-    options?: {
-      syncHistoryFieldName?: string;
-      syncHistoryValueGetter?: (newValue: AbilityDTO[]) => unknown;
-    }
-  ) => void;
+  onChange: UpdateTableFunction;
+  // onChange: (
+  //   newAbility: AbilityDTO,
+  //   options?: {
+  //     syncHistoryFieldName?: string;
+  //     syncHistoryValueGetter?: (newValue: AbilityDTO[]) => unknown;
+  //   }
+  // ) => void;
 }
 
 const AbilityCard = ({ ability, onChange }: AbilityCardProps) => {
-  const handleAbilityChange = (
-    propertyName: keyof AbilityDTO,
-    newValue: InputValue | SkillDTO[],
-    options?: {
-      syncHistoryFieldName?: string;
-      syncHistoryValueGetter?: (newValue: AbilityDTO[]) => unknown;
-    }
-  ) => {
-    const newAbility: AbilityDTO = {
-      ...ability,
-      [propertyName]: newValue,
-    };
+  // const handleAbilityChange = (
+  //   propertyName: keyof AbilityDTO,
+  //   newValue: InputValue | SkillDTO[],
+  //   options?: {
+  //     syncHistoryFieldName?: string;
+  //     syncHistoryValueGetter?: (newValue: AbilityDTO[]) => unknown;
+  //   }
+  // ) => {
+  //   const newAbility: AbilityDTO = {
+  //     ...ability,
+  //     [propertyName]: newValue,
+  //   };
 
-    const syncHistoryValueGetter =
-      options?.syncHistoryValueGetter ??
-      ((changedAbilities: AbilityDTO[]) =>
-        changedAbilities.find((a: AbilityDTO) => a?.name === ability?.name)?.[
-          propertyName
-        ]);
+  //   const syncHistoryValueGetter =
+  //     options?.syncHistoryValueGetter ??
+  //     ((changedAbilities: AbilityDTO[]) =>
+  //       changedAbilities.find((a: AbilityDTO) => a?.name === ability?.name)?.[
+  //         propertyName
+  //       ]);
 
-    onChange(newAbility, {
-      syncHistoryFieldName:
-        options?.syncHistoryFieldName ??
-        `${ability?.name} ${String(propertyName)}`,
-      syncHistoryValueGetter,
-    });
-  };
+  //   onChange(newAbility, {
+  //     syncHistoryFieldName:
+  //       options?.syncHistoryFieldName ??
+  //       `${ability?.name} ${String(propertyName)}`,
+  //     syncHistoryValueGetter,
+  //   });
+  // };
 
-  const handleSkillChange = (
-    skillName: string,
-    propertyName: keyof SkillDTO,
-    propertyValue: InputValue
-  ) => {
-    const newSkills = ability.skills.map((skill) =>
-      skill.name === skillName
-        ? { ...skill, [propertyName]: propertyValue }
-        : skill
-    );
+  // const handleSkillChange = (
+  //   skillName: string,
+  //   propertyName: keyof SkillDTO,
+  //   propertyValue: InputValue
+  // ) => {
+  //   const newSkills = ability.skills.map((skill) =>
+  //     skill.name === skillName
+  //       ? { ...skill, [propertyName]: propertyValue }
+  //       : skill
+  //   );
 
-    const syncHistoryValueGetter = (changedAbilities: AbilityDTO[]) =>
-      changedAbilities
-        .find((a) => a?.name === ability?.name)
-        ?.skills.find((s) => s?.name === skillName)?.[propertyName];
+  //   const syncHistoryValueGetter = (changedAbilities: AbilityDTO[]) =>
+  //     changedAbilities
+  //       .find((a) => a?.name === ability?.name)
+  //       ?.skills.find((s) => s?.name === skillName)?.[propertyName];
 
-    handleAbilityChange("skills", newSkills, {
-      syncHistoryFieldName: `${skillName} ${String(propertyName)}`,
-      syncHistoryValueGetter,
-    });
-  };
+  //   handleAbilityChange("skills", newSkills, {
+  //     syncHistoryFieldName: `${skillName} ${String(propertyName)}`,
+  //     syncHistoryValueGetter,
+  //   });
+  // };
 
   return (
     <Flex gap={"10px"} className="card ability-card">
@@ -85,9 +90,9 @@ const AbilityCard = ({ ability, onChange }: AbilityCardProps) => {
               type="text"
               className="modifier-input"
               value={ability.modifier}
-              onChange={(newValue: InputValue) => {
-                handleAbilityChange(`modifier`, newValue);
-              }}
+              onChange={(newValue: InputValue) =>
+                onChange("modifier", newValue, ability.id, "abilities")
+              }
             />
             <span>MODIFIER</span>
           </Flex>
@@ -96,9 +101,9 @@ const AbilityCard = ({ ability, onChange }: AbilityCardProps) => {
               type="text"
               className="score-input"
               value={ability.score}
-              onChange={(newValue: InputValue) => {
-                handleAbilityChange(`score`, newValue);
-              }}
+              onChange={(newValue: InputValue) =>
+                onChange("score", newValue, ability.id, "abilities")
+              }
             />
             <span>SCORE</span>
           </Flex>
@@ -117,47 +122,59 @@ const AbilityCard = ({ ability, onChange }: AbilityCardProps) => {
               <Input
                 type="toggle"
                 value={ability.saving_throw_proficiency}
-                onChange={(newValue: InputValue) => {
-                  handleAbilityChange(`saving_throw_proficiency`, newValue);
-                }}
+                onChange={(newValue: InputValue) =>
+                  onChange(
+                    "saving_throw_proficiency",
+                    newValue,
+                    ability.id,
+                    "abilities"
+                  )
+                }
               />
               <Input
                 type="text"
                 className="ability-bonus"
                 value={ability.saving_throw_bonus}
-                onChange={(newValue: InputValue) => {
-                  handleAbilityChange(`saving_throw_bonus`, newValue);
-                }}
+                onChange={(newValue: InputValue) =>
+                  onChange(
+                    "saving_throw_bonus",
+                    newValue,
+                    ability.id,
+                    "abilities"
+                  )
+                }
               />
               <span className="skill-label">Saving Throw</span>
             </Flex>
             <Separator />
-            {ability.skills.map((skill) => (
-              <Flex
-                key={`${ability.name}_${skill.name}`.replace(" ", "-")}
-                display={"inline-flex"}
-                gap={"10px"}
-                width={"fit-content"}
-                align={"center"}
-              >
-                <Input
-                  type="toggle"
-                  value={skill.proficiency}
-                  onChange={(newValue) =>
-                    handleSkillChange(skill.name, "proficiency", newValue)
-                  }
-                />
-                <Input
-                  type="text"
-                  className="ability-bonus"
-                  value={skill.bonus}
-                  onChange={(newValue) =>
-                    handleSkillChange(skill.name, "bonus", newValue)
-                  }
-                />
-                <span className="skill-label">{skill.name}</span>
-              </Flex>
-            ))}
+            {ability.skills
+              .sort((a, b) => a.name.localeCompare(b.name)) // sort alphabetically by name
+              .map((skill) => (
+                <Flex
+                  key={`${ability.name}_${skill.name}`.replace(" ", "-")}
+                  display={"inline-flex"}
+                  gap={"10px"}
+                  width={"fit-content"}
+                  align={"center"}
+                >
+                  <Input
+                    type="toggle"
+                    value={skill.proficiency}
+                    onChange={(newValue) =>
+                      onChange("proficiency", newValue, skill.id, "skills")
+                    }
+                  />
+                  <Input
+                    type="text"
+                    className="ability-bonus"
+                    value={skill.bonus}
+                    onChange={(newValue) =>
+                      onChange("bonus", newValue, skill.id, "skills")
+                    }
+                  />
+                  <span className="skill-label">{skill.name}</span>
+                </Flex>
+              ))}
           </Flex>
         </Flex>
       </Flex>

@@ -1,45 +1,26 @@
-import type { AbilityDTO } from "./data/characters";
 import AbilityCard from "./AbilityCard";
 import ScrollArea from "./ScrollArea";
 import { Flex } from "@radix-ui/themes";
+import type { UpdateTableFunction, AbilityDTO } from "./types/types";
 
 interface AbilitySectionProps {
   abilities: AbilityDTO[];
-  onChange: (
-    newAbilities: AbilityDTO[],
-    options?: {
-      syncHistoryFieldName?: string;
-      syncHistoryValueGetter?: (newValue: AbilityDTO[]) => unknown;
-    }
-  ) => void;
+  onChange: UpdateTableFunction;
 }
 
 const AbilitySection = ({ abilities, onChange }: AbilitySectionProps) => {
-  const handleAbilityChange = (
-    newAbility: AbilityDTO,
-    options?: {
-      syncHistoryFieldName?: string;
-      syncHistoryValueGetter?: (newValue: AbilityDTO[]) => unknown;
-    }
-  ) => {
-    onChange(
-      abilities.map((ability) =>
-        ability?.name === newAbility?.name ? newAbility : ability
-      ),
-      options
-    );
-  };
-
   return (
     <ScrollArea type="horizontal">
       <Flex gap={"10px"} justify={"center"}>
-        {abilities.map((ability) => (
-          <AbilityCard
-            ability={ability}
-            key={`${ability?.name}_abilityCard`}
-            onChange={handleAbilityChange}
-          />
-        ))}
+        {abilities
+          .sort((a, b) => a.display_order - b.display_order)
+          .map((ability) => (
+            <AbilityCard
+              ability={ability}
+              key={`${ability?.name}_abilityCard`}
+              onChange={onChange}
+            />
+          ))}
       </Flex>
     </ScrollArea>
   );
