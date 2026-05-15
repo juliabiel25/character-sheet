@@ -75,7 +75,6 @@ function App() {
       clearSyncStatus();
     }, 5000);
   };
-  console.log("app render");
 
   useEffect(() => {
     // 1. handle existing session
