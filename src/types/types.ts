@@ -13,7 +13,8 @@ export type UpdateTableFunction = (
   columnName: string,
   newValue: InputValue,
   id?: string | null,
-  tableName?: string
+  tableName?: string,
+  fieldNamePrefix?: string
 ) => Promise<void>;
 
 export type CharacterDTO = {

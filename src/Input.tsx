@@ -53,12 +53,6 @@ const Input = ({
   }, [draftValue, normalize, onChange, value]);
 
   useEffect(() => {
-    // if (value != draftValue)
-    // if the value from parent changes -> overwrite the draft value
-    // generally this app only assumes eventual sync on the db side and does not receive constant updates from the server
-    // so if this value changes here - it's either because:
-    // - it was only just initialized at component creation and is therefore the default value from the server
-    // - a different character was selected with a different default value
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraftValue(normalize(value));
   }, [value, normalize]);
@@ -70,7 +64,7 @@ const Input = ({
           <input
             id={name}
             name={name}
-            type="radio"
+            type="checkbox"
             className={className}
             checked={!!draftValue}
             onChange={(e) => handleChange(e.target.checked)}

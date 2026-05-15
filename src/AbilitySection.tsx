@@ -18,7 +18,9 @@ const AbilitySection = ({ abilities, onChange }: AbilitySectionProps) => {
             <AbilityCard
               ability={ability}
               key={`${ability?.name}_abilityCard`}
-              onChange={onChange}
+              onChange={(columnName, newValue, id, tableName) =>
+                onChange(columnName, newValue, id, tableName, ability.name)
+              }
             />
           ))}
       </Flex>

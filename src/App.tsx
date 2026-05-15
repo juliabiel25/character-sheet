@@ -6,7 +6,6 @@ import UnauthorizedView from "./UnauthorizedView";
 import CharacterSelector from "./CharacterSelector";
 import { Button } from "@radix-ui/themes";
 import Input from "./Input";
-import { deleteCharacter } from "./data/characters";
 import { Flex } from "@radix-ui/themes";
 import WidgetMenu from "./WidgetMenu";
 import type {
@@ -16,13 +15,13 @@ import type {
 } from "./types/types";
 import AbilitySection from "./AbilitySection";
 import { useCharacters } from "./hooks/useCharacters";
-import { insertCharacter } from "./data/characters";
 
 function App() {
   const {
     characters,
     selectedCharacterId,
     getCharactersData,
+    deleteCharacter,
     resetCharacters,
     selectedCharacter,
     selectCharacter,
@@ -41,7 +40,8 @@ function App() {
     columnName,
     newValue,
     id = selectedCharacterId,
-    tableName = "characters"
+    tableName = "characters",
+    fieldNamePrefix
   ) => {
     if (selectedCharacterId) {
       const { error, data } = await supabase
@@ -58,7 +58,7 @@ function App() {
         ...prev,
         {
           timestamp: new Date(),
-          field: columnName,
+          field: `${fieldNamePrefix ? fieldNamePrefix + " " : ""}${columnName}`,
           value: newValue ?? "",
           error: error?.message,
         },
@@ -127,12 +127,9 @@ function App() {
         {selectedCharacter && (
           // assign the key to the selected character id to remount the entire form container on active character change
           <Flex direction={"column"} gap={"20px"} key={selectedCharacter.id}>
-            {/* <Button
-              color="red"
-              onClick={() => handleDeleteCharacter(character.id)}
-            >
+            <Button color="red" onClick={deleteCharacter}>
               delete character
-            </Button> */}
+            </Button>
             <header>
               <div className="header-left card">
                 <div className="labeled-Input">

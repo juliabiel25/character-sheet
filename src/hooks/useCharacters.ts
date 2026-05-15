@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { supabase } from "../utils/supabase";
-import type { CharacterDTO } from "../types/types";
+import type { CharacterDTO, InputValue } from "../types/types";
 
 export function useCharacters() {
   const [characters, setCharacters] = useState<CharacterDTO[]>([]);
@@ -8,14 +8,18 @@ export function useCharacters() {
     null
   );
 
-  const [selectedCharacter, setSelectedCharacter] =
-    useState<CharacterDTO | null>(null);
+  // ✅ derived state (NO separate fetch state)
+  const selectedCharacter = useMemo(() => {
+    return characters.find((c) => c.id === selectedCharacterId) ?? null;
+  }, [characters, selectedCharacterId]);
 
-  // CHARACTER LIST
+  // -----------------------------
+  // LOAD ALL CHARACTERS (full data)
+  // -----------------------------
   const getCharactersData = useCallback(async () => {
     const { data, error } = await supabase
       .from("characters")
-      .select("id, name, created_at")
+      .select(`*, abilities(*, skills(*))`)
       .order("created_at");
 
     if (error) {
@@ -23,63 +27,110 @@ export function useCharacters() {
       return;
     }
 
-    setCharacters(data);
+    setCharacters(data ?? []);
 
-    if (!selectedCharacterId && data.length > 0) {
+    if (!selectedCharacterId && data?.length > 0) {
       setSelectedCharacterId(data[0].id);
     }
   }, [selectedCharacterId]);
 
-  useEffect(() => {
-    if (!selectedCharacterId) return;
-
-    const loadCharacter = async () => {
-      const { data, error } = await supabase
-        .from("characters")
-        .select(`*, abilities(*, skills(*))`)
-        .eq("id", selectedCharacterId)
-        .single();
-      if (error) {
-        console.error(error);
-        return;
-      }
-      setSelectedCharacter(data);
-    };
-    loadCharacter();
-  }, [selectedCharacterId]);
-
-  const resetCharacters = () => {
-    setCharacters([]);
-    setSelectedCharacter(null);
-    setSelectedCharacterId(null);
+  // -----------------------------
+  // SELECT CHARACTER (instant)
+  // -----------------------------
+  const selectCharacter = (id: string) => {
+    setSelectedCharacterId(id);
   };
 
+  // -----------------------------
+  // CREATE CHARACTER
+  // -----------------------------
   const createCharacter = async (userId: string) => {
-    const { error, data } = await supabase
+    const { data, error } = await supabase
       .from("characters")
       .insert([{ user_id: userId }])
-      .select()
+      .select(`*, abilities(*, skills(*))`)
       .single();
 
     if (error) {
       console.error("Error creating character:", error);
       return;
     }
-    await getCharactersData();
+
+    setCharacters((prev) => [...prev, data]);
     setSelectedCharacterId(data.id);
   };
 
-  const selectCharacter = (id: string) => {
-    setSelectedCharacterId(id);
+  // -----------------------------
+  // DELETE CHARACTER
+  // -----------------------------
+  const deleteCharacter = async () => {
+    if (!selectedCharacterId) return;
+
+    const { error } = await supabase
+      .from("characters")
+      .delete()
+      .eq("id", selectedCharacterId);
+
+    if (error) {
+      console.error("Error deleting character:", error);
+      return;
+    }
+
+    // get updated list
+    const { data } = await supabase
+      .from("characters")
+      .select(`*, abilities(*, skills(*))`)
+      .order("created_at");
+
+    if (!data) return;
+
+    setCharacters(data);
+    setSelectedCharacterId(
+      (prevSelectedCharacterId) =>
+        data.filter((c) => c.id !== prevSelectedCharacterId)[0].id
+    );
+  };
+  // -----------------------------
+  // RESET
+  // -----------------------------
+  const resetCharacters = () => {
+    setCharacters([]);
+    setSelectedCharacterId(null);
+  };
+
+  // -----------------------------
+  // UPDATE CHARACTER FIELD (local-first)
+  // -----------------------------
+  const updateCharacterField = async (
+    id: string,
+    column: string,
+    value: InputValue
+  ) => {
+    const { error } = await supabase
+      .from("characters")
+      .update({ [column]: value })
+      .eq("id", id);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    // ✅ optimistic local update (prevents stale flash)
+    setCharacters((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, [column]: value } : c))
+    );
   };
 
   return {
     characters,
-    selectedCharacter,
     selectedCharacterId,
+    selectedCharacter, // derived
     getCharactersData,
-    createCharacter,
     selectCharacter,
+    createCharacter,
     resetCharacters,
+    updateCharacterField,
+    deleteCharacter,
   };
 }

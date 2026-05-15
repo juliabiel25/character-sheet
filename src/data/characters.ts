@@ -59,7 +59,3 @@ export async function updateSkill(
     .select()
     .single();
 }
-
-export async function deleteCharacter(id: string) {
-  return supabase.from("characters").delete().eq("id", id);
-}
