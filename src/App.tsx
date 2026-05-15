@@ -6,38 +6,32 @@ import UnauthorizedView from "./UnauthorizedView";
 import CharacterSelector from "./CharacterSelector";
 import { Button } from "@radix-ui/themes";
 import Input from "./Input";
-import { getCharacters, deleteCharacter } from "./data/characters";
+import { deleteCharacter } from "./data/characters";
 import { Flex } from "@radix-ui/themes";
 import WidgetMenu from "./WidgetMenu";
 import type {
   SyncStatus,
   SyncHistoryEntry,
-  CharacterDTO,
   UpdateTableFunction,
 } from "./types/types";
 import AbilitySection from "./AbilitySection";
-import { useCharacterDetails } from "./hooks/useCharacterDetails";
+import { useCharacters } from "./hooks/useCharacters";
 import { insertCharacter } from "./data/characters";
 
 function App() {
-  const [characterList, setCharacterList] = useState<CharacterDTO[]>([]);
-  const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(
-    null
-  );
-  const { character, getCharacterDetails, resetCharacter } =
-    useCharacterDetails();
+  const {
+    characters,
+    selectedCharacterId,
+    getCharactersData,
+    resetCharacters,
+    selectedCharacter,
+    selectCharacter,
+    createCharacter,
+  } = useCharacters();
   const [userId, setUserId] = useState<string | null | undefined>(null);
   const [syncHistory, setSyncHistory] = useState<SyncHistoryEntry[]>([]);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
   const statusTimeout = useRef<number>(null);
-
-  async function getCharacterList() {
-    const { data, error } = await getCharacters();
-    if (!error && !!data) {
-      setCharacterList(data);
-    }
-    return data;
-  }
 
   const clearSyncStatus = () => {
     setSyncStatus("idle");
@@ -81,34 +75,7 @@ function App() {
       clearSyncStatus();
     }, 5000);
   };
-
-  const createCharacter = async () => {
-    const { error, data } = await insertCharacter();
-
-    console.log("create character output: ", { error, data });
-    if (error) {
-      console.error(`Error inserting a character: `, error.message);
-    } else {
-      setSelectedCharacterId(data.id);
-      getCharacterList();
-    }
-  };
-
-  const handleDeleteCharacter = async (id: string) => {
-    const { error } = await deleteCharacter(id);
-
-    if (error) {
-      console.error(`Error deleting character ${id}`, error.message);
-    } else {
-      // if the deleted character is the currently selected one => clear selection
-      const characters = await getCharacterList();
-      if (id === selectedCharacterId) {
-        setSelectedCharacterId(
-          characters && characters.length > 0 ? characters[0].id : null
-        );
-      }
-    }
-  };
+  console.log("app render");
 
   useEffect(() => {
     // 1. handle existing session
@@ -120,54 +87,32 @@ function App() {
           setUserId(session.user.id);
         } else {
           setUserId(null);
-          resetCharacter();
+          resetCharacters();
         }
       }
     );
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [resetCharacters]);
 
   useEffect(() => {
-    console.log("Logged in user:", userId);
-
-    // get a list of available characters
-    async function getCharacterListAndSelectDefault() {
-      const { data, error } = await supabase
-        .from("characters")
-        .select()
-        .order("created_at");
-      if (!error && !!data) {
-        setCharacterList(data);
-        setSelectedCharacterId(data[0].id);
-      }
-    }
     if (userId) {
-      getCharacterListAndSelectDefault();
+      console.log("Logged in user:", userId);
+      getCharactersData();
     }
-  }, [userId]);
+  }, [userId, getCharactersData]);
 
-  useEffect(() => {
-    console.log("selected character:", selectedCharacterId);
-    const load = async () => {
-      console.log("loda...");
-      await getCharacterDetails(selectedCharacterId);
-    };
-
-    load();
-  }, [selectedCharacterId]);
-  // }, [selectedCharacterId, getCharacterDetails]);
+  if (!userId)
+    return <Button onClick={signInWithGoogle}>log in with google</Button>;
 
   return (
     <div id="content-wrapper">
       <div id="left-panel">
-        {userId && character && (
+        {characters !== null && (
           <CharacterSelector
-            characterList={characterList}
+            characters={characters}
             selectedCharacterId={selectedCharacterId}
-            onCharacterSelect={(characterId: string) =>
-              setSelectedCharacterId(characterId)
-            }
-            onNewCharacterClick={createCharacter}
+            onCharacterSelect={selectCharacter}
+            onNewCharacterClick={() => createCharacter(userId)}
           />
         )}
       </div>
@@ -177,22 +122,24 @@ function App() {
         ) : (
           <Button onClick={signInWithGoogle}>log in with google</Button>
         )}
-        {!userId ? (
-          <UnauthorizedView />
-        ) : character ? (
-          <Flex direction={"column"} gap={"20px"}>
-            <Button
+        {!userId && <UnauthorizedView />}
+
+        {selectedCharacter && (
+          // assign the key to the selected character id to remount the entire form container on active character change
+          <Flex direction={"column"} gap={"20px"} key={selectedCharacter.id}>
+            {/* <Button
               color="red"
               onClick={() => handleDeleteCharacter(character.id)}
             >
               delete character
-            </Button>
+            </Button> */}
             <header>
               <div className="header-left card">
                 <div className="labeled-Input">
                   <Input
+                    name="name"
                     type="text"
-                    value={character.name}
+                    value={selectedCharacter?.name}
                     onChange={(newValue) => handleUpdateField("name", newValue)}
                   />
                   <label htmlFor="character_name">CHARACTER NAME</label>
@@ -201,8 +148,9 @@ function App() {
                 <div className="character-details">
                   <div className="labeled-Input">
                     <Input
+                      name="background"
                       type="text"
-                      value={character.background}
+                      value={selectedCharacter?.background}
                       onChange={(newValue) =>
                         handleUpdateField("background", newValue)
                       }
@@ -212,8 +160,9 @@ function App() {
 
                   <div className="labeled-Input">
                     <Input
+                      name="class"
                       type="text"
-                      value={character.class}
+                      value={selectedCharacter?.class}
                       onChange={(newValue) =>
                         handleUpdateField("class", newValue)
                       }
@@ -223,8 +172,9 @@ function App() {
 
                   <div className="labeled-Input">
                     <Input
+                      name="species"
                       type="text"
-                      value={character.species}
+                      value={selectedCharacter?.species}
                       onChange={(newValue) =>
                         handleUpdateField("species", newValue)
                       }
@@ -234,8 +184,9 @@ function App() {
 
                   <div className="labeled-Input">
                     <Input
+                      name="subclass"
                       type="text"
-                      value={character.subclass}
+                      value={selectedCharacter?.subclass}
                       onChange={(newValue) =>
                         handleUpdateField("subclass", newValue)
                       }
@@ -249,8 +200,9 @@ function App() {
                 <div className="svg-border-content">
                   <div className="labeled-Input">
                     <Input
+                      name="level"
                       type="text"
-                      value={character.level}
+                      value={selectedCharacter?.level}
                       onChange={(newValue) =>
                         handleUpdateField("level", newValue)
                       }
@@ -261,8 +213,9 @@ function App() {
 
                 <div className="labeled-Input">
                   <Input
+                    name="experience_points"
                     type="text"
-                    value={character.experience_points}
+                    value={selectedCharacter?.experience_points}
                     onChange={(newValue) =>
                       handleUpdateField("experience_points", newValue)
                     }
@@ -275,9 +228,9 @@ function App() {
                 <div className="labeled-Input">
                   <label htmlFor="character_armor_class">ARMOR CLASS</label>
                   <Input
+                    name="armor_class"
                     type="text"
-                    id="armor_class"
-                    value={character.armor_class}
+                    value={selectedCharacter?.armor_class}
                     onChange={(newValue) =>
                       handleUpdateField("armor_class", newValue)
                     }
@@ -286,8 +239,9 @@ function App() {
                 <div className="labeled-Input">
                   <label htmlFor="character_shield">SHIELD</label>
                   <Input
+                    name="shield"
                     type="toggle"
-                    value={character.shield}
+                    value={selectedCharacter?.shield}
                     onChange={(newValue) =>
                       handleUpdateField("shield", newValue)
                     }
@@ -302,7 +256,8 @@ function App() {
                     <div className="current-hit-points">
                       <div className="labeled-Input">
                         <Input
-                          value={character.hit_points_current}
+                          name="hit_points_current"
+                          value={selectedCharacter?.hit_points_current}
                           onChange={(newValue) =>
                             handleUpdateField("hit_points_current", newValue)
                           }
@@ -313,7 +268,8 @@ function App() {
                     <div className="total-hit-points">
                       <div className="labeled-Input">
                         <Input
-                          value={character.hit_points_temp}
+                          name={"hit_points_temp"}
+                          value={selectedCharacter?.hit_points_temp}
                           onChange={(newValue) =>
                             handleUpdateField("hit_points_temp", newValue)
                           }
@@ -322,7 +278,8 @@ function App() {
                       </div>
                       <div className="labeled-Input">
                         <Input
-                          value={character.hit_points_max}
+                          name={"hit_points_max"}
+                          value={selectedCharacter?.hit_points_max}
                           onChange={(newValue) =>
                             handleUpdateField("hit_points_max", newValue)
                           }
@@ -338,7 +295,8 @@ function App() {
                   <div className="total-hit-points">
                     <div className="labeled-Input">
                       <Input
-                        value={character.hit_dice_spent}
+                        name={"hit_dice_spent"}
+                        value={selectedCharacter?.hit_dice_spent}
                         onChange={(newValue) =>
                           handleUpdateField("hit_dice_spent", newValue)
                         }
@@ -347,8 +305,9 @@ function App() {
                     </div>
                     <div className="labeled-Input">
                       <Input
+                        name={"hit_dice_max"}
                         type="text"
-                        value={character.hit_dice_max}
+                        value={selectedCharacter?.hit_dice_max}
                         onChange={(newValue) =>
                           handleUpdateField("hit_dice_max", newValue)
                         }
@@ -363,8 +322,15 @@ function App() {
                   <div className="labeled-Input">
                     <div className="death-save-successes">
                       <Input
+                        name={"death_saves_successes"}
                         type="checkbox-group"
-                        value={character.death_saves_successes}
+                        value={
+                          selectedCharacter?.death_saves_successes ?? [
+                            false,
+                            false,
+                            false,
+                          ]
+                        }
                         onChange={(newValue) =>
                           handleUpdateField("death_saves_successes", newValue)
                         }
@@ -375,8 +341,15 @@ function App() {
                   <div className="labeled-Input">
                     <div className="death-save-failures">
                       <Input
+                        name={"death_saves_failures"}
                         type="checkbox-group"
-                        value={character.death_saves_failures}
+                        value={
+                          selectedCharacter?.death_saves_failures ?? [
+                            false,
+                            false,
+                            false,
+                          ]
+                        }
                         onChange={(newValue) =>
                           handleUpdateField("death_saves_failures", newValue)
                         }
@@ -392,9 +365,9 @@ function App() {
                 <div className="labeled-Input">
                   <label htmlFor="proficiency_bonus">PROFICIENCY BONUS</label>
                   <Input
+                    name={"proficiency_bonus"}
                     type="text"
-                    id="proficiency_bonus"
-                    value={character.proficiency_bonus}
+                    value={selectedCharacter?.proficiency_bonus}
                     onChange={(newValue) =>
                       handleUpdateField("proficiency_bonus", newValue)
                     }
@@ -405,9 +378,9 @@ function App() {
                 <div className="labeled-Input">
                   <label htmlFor="initiative">INITIATIVE</label>
                   <Input
+                    name="initiative_bonus"
                     type="text"
-                    id="initiative_bonus"
-                    value={character.initiative_bonus}
+                    value={selectedCharacter?.initiative_bonus}
                     onChange={(newValue) =>
                       handleUpdateField("initiative_bonus", newValue)
                     }
@@ -418,9 +391,9 @@ function App() {
                 <div className="labeled-Input">
                   <label htmlFor="speed">SPEED</label>
                   <Input
+                    name="speed"
                     type="text"
-                    id="speed"
-                    value={character.speed}
+                    value={selectedCharacter?.speed}
                     onChange={(newValue) =>
                       handleUpdateField("speed", newValue)
                     }
@@ -431,9 +404,9 @@ function App() {
                 <div className="labeled-Input">
                   <label htmlFor="size">SIZE</label>
                   <Input
+                    name="size"
                     type="text"
-                    id="size"
-                    value={character.size}
+                    value={selectedCharacter?.size}
                     onChange={(newValue) => handleUpdateField("size", newValue)}
                   />
                 </div>
@@ -443,8 +416,8 @@ function App() {
                   <label htmlFor="passive_perception">PASSIVE PERCEPTION</label>
                   <Input
                     type="text"
-                    id="passive_perception"
-                    value={character?.passive_perception}
+                    name="passive_perception"
+                    value={selectedCharacter?.passive_perception}
                     onChange={(newValue) =>
                       handleUpdateField("passive_perception", newValue)
                     }
@@ -452,21 +425,23 @@ function App() {
                 </div>
               </div>
             </Flex>
-            {character?.abilities && (
+            {selectedCharacter?.abilities && (
               <AbilitySection
-                abilities={character.abilities}
+                abilities={selectedCharacter?.abilities}
                 onChange={handleUpdateField}
               />
             )}
           </Flex>
-        ) : (
+        )}
+
+        {characters !== null && characters.length === 0 && (
           <Flex
             width={"100%"}
             height={"100%"}
             align={"center"}
             justify={"center"}
           >
-            <Button size={"4"} onClick={() => createCharacter()}>
+            <Button size={"4"} onClick={() => createCharacter(userId)}>
               Create a new character
             </Button>
           </Flex>
@@ -475,7 +450,7 @@ function App() {
       <WidgetMenu
         syncHistory={syncHistory}
         syncStatus={syncStatus}
-        onReloadClick={() => getCharacterDetails(selectedCharacterId)}
+        onReloadClick={() => getCharactersData()}
       />
     </div>
   );

@@ -7,13 +7,13 @@ interface InputProps {
   type?: "text" | "toggle" | "checkbox-group";
   onChange?: (newValue: InputValue) => void;
   value: InputValue;
-  id?: string;
+  name: string;
   className?: string;
 }
 
 const Input = ({
   value,
-  id,
+  name,
   type = "text",
   className,
   onChange,
@@ -53,14 +53,12 @@ const Input = ({
   }, [draftValue, normalize, onChange, value]);
 
   useEffect(() => {
-    if (value != draftValue)
-      console.log("PARENT VALUE CHANGED", { value, draftValue });
+    // if (value != draftValue)
     // if the value from parent changes -> overwrite the draft value
     // generally this app only assumes eventual sync on the db side and does not receive constant updates from the server
     // so if this value changes here - it's either because:
     // - it was only just initialized at component creation and is therefore the default value from the server
     // - a different character was selected with a different default value
-
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraftValue(normalize(value));
   }, [value, normalize]);
@@ -70,7 +68,8 @@ const Input = ({
       {type === "toggle" ? (
         <Flex>
           <input
-            id={id}
+            id={name}
+            name={name}
             type="radio"
             className={className}
             checked={!!draftValue}
@@ -85,7 +84,8 @@ const Input = ({
       ) : (
         <TextField.Root
           size="2"
-          id={id}
+          id={name}
+          name={name}
           className={className}
           value={draftValue?.toString()}
           onChange={(e) => handleChange(e.target.value)}

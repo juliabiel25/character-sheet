@@ -69,3 +69,8 @@ export type SkillDTO = {
   bonus: string;
   name: string;
 };
+
+export type CharacterList = {
+  id: string;
+  name?: string;
+}[];

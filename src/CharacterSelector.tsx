@@ -1,14 +1,16 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
+// import type { CharacterList } from "./types/types";
 import { type CharacterDTO } from "./types/types";
+// import { useCharacterList } from "./hooks/useCharacterList";
 
 interface CharacterSelectorProps {
-  characterList: CharacterDTO[];
+  characters: CharacterDTO[];
   selectedCharacterId: string | null;
   onCharacterSelect: (id: string) => void;
-  onNewCharacterClick: () => void;
+  onNewCharacterClick: () => Promise<void>;
 }
 const CharacterSelector = ({
-  characterList,
+  characters,
   selectedCharacterId,
   onCharacterSelect,
   onNewCharacterClick,
@@ -16,7 +18,7 @@ const CharacterSelector = ({
   return (
     <Tooltip.Provider delayDuration={0}>
       <div id="character-selection">
-        {characterList.map((character) => (
+        {characters.map((character) => (
           <Tooltip.Root key={`character-selection-tile-${character?.id}`}>
             <Tooltip.Trigger asChild>
               <div
@@ -31,9 +33,7 @@ const CharacterSelector = ({
             <Tooltip.Content side="right">
               <Tooltip.Arrow />
               <div className="tooltip">
-                {character.name
-                  ? `${character.name} [${character?.id}]`
-                  : character?.id}
+                {character.name ? `${character.name}` : character?.id}
               </div>
             </Tooltip.Content>
           </Tooltip.Root>
